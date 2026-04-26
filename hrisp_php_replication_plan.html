@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-color, #0f1117); color: var(--text-color, #e2e8f0); padding: 20px; font-size: 13px; }
+  h1 { font-size: 18px; font-weight: 700; color: #60a5fa; margin-bottom: 4px; }
+  .subtitle { color: #94a3b8; font-size: 12px; margin-bottom: 20px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tab { padding: 7px 16px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #94a3b8; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s; }
+  .tab.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+  .tab:hover:not(.active) { border-color: #475569; color: #e2e8f0; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* FEATURES TAB */
+  .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .module-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px; }
+  .module-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .module-card .icon { font-size: 16px; }
+  .feature-list { list-style: none; }
+  .feature-list li { color: #94a3b8; font-size: 12px; padding: 2px 0; display: flex; align-items: flex-start; gap: 5px; }
+  .feature-list li::before { content: '→'; color: #3b82f6; flex-shrink: 0; }
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: auto; }
+  .badge.core { background: #1d4ed8; color: #bfdbfe; }
+  .badge.report { background: #7e22ce; color: #e9d5ff; }
+  .badge.settings { background: #065f46; color: #a7f3d0; }
+  .badge.security { background: #7c2d12; color: #fed7aa; }
+
+  /* TECH MAP TAB */
+  .tech-table { width: 100%; border-collapse: collapse; }
+  .tech-table th { text-align: left; padding: 10px 14px; background: #1e293b; color: #60a5fa; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #334155; }
+  .tech-table td { padding: 10px 14px; border-bottom: 1px solid #1e293b; font-size: 12px; vertical-align: top; }
+  .tech-table tr:hover td { background: #1e293b44; }
+  .java-col { color: #f97316; }
+  .php-col { color: #a78bfa; }
+  .effort { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .easy { background: #14532d; color: #86efac; }
+  .medium { background: #713f12; color: #fde68a; }
+  .hard { background: #7f1d1d; color: #fca5a5; }
+
+  /* SUBSCRIPTION TAB */
+  .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .plan-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px; position: relative; }
+  .plan-card.featured { border-color: #2563eb; }
+  .plan-card.featured::before { content: '★ MOST POPULAR'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #2563eb; color: #fff; font-size: 9px; font-weight: 700; padding: 3px 10px; border-radius: 10px; white-space: nowrap; }
+  .plan-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .plan-tagline { color: #94a3b8; font-size: 11px; margin-bottom: 12px; }
+  .plan-price { margin-bottom: 12px; }
+  .plan-price .amount { font-size: 24px; font-weight: 800; color: #60a5fa; }
+  .plan-price .period { color: #94a3b8; font-size: 11px; }
+  .plan-price .alt { font-size: 11px; color: #475569; margin-top: 2px; }
+  .plan-price .save { font-size: 10px; color: #34d399; font-weight: 600; }
+  .plan-features { list-style: none; margin-bottom: 14px; }
+  .plan-features li { font-size: 11px; color: #94a3b8; padding: 3px 0; display: flex; gap: 5px; }
+  .plan-features li .check { color: #34d399; flex-shrink: 0; }
+  .plan-features li .cross { color: #ef4444; flex-shrink: 0; }
+  .plan-btn { display: block; text-align: center; padding: 8px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; width: 100%; }
+  .plan-btn.primary { background: #2563eb; color: #fff; }
+  .plan-btn.secondary { background: #334155; color: #e2e8f0; }
+  .billing-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; font-size: 12px; color: #94a3b8; }
+  .toggle { background: #334155; border-radius: 20px; padding: 3px; display: flex; cursor: pointer; }
+  .toggle span { padding: 4px 12px; border-radius: 16px; font-size: 11px; font-weight: 600; transition: all 0.2s; }
+  .toggle span.active { background: #2563eb; color: #fff; }
+  .sub-note { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 16px; font-size: 11px; color: #94a3b8; }
+  .sub-note strong { color: #e2e8f0; }
+
+  /* ARCHITECTURE TAB */
+  .arch-section { margin-bottom: 18px; }
+  .arch-section h3 { font-size: 13px; font-weight: 600; color: #60a5fa; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #1e293b; }
+  .folder-tree { font-family: 'Courier New', monospace; font-size: 11px; color: #94a3b8; line-height: 1.8; background: #1e293b; border-radius: 8px; padding: 14px; }
+  .folder-tree .dir { color: #60a5fa; font-weight: 600; }
+  .folder-tree .file { color: #a78bfa; }
+  .folder-tree .php { color: #f59e0b; }
+  .folder-tree .sql { color: #34d399; }
+  .folder-tree .note { color: #475569; }
+  .db-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .db-table { background: #1e293b; border: 1px solid #334155; border-radius: 7px; padding: 10px; }
+  .db-table h4 { font-size: 11px; font-weight: 700; color: #f59e0b; margin-bottom: 6px; }
+  .db-table .col { font-size: 10px; color: #94a3b8; padding: 1px 0; }
+  .db-table .col.pk { color: #60a5fa; }
+  .db-table .col.fk { color: #a78bfa; }
+  .db-table .col.new { color: #34d399; }
+
+  /* FEASIBILITY */
+  .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+  .summary-card { background: #1e293b; border-radius: 10px; padding: 16px; border: 1px solid #334155; }
+  .summary-card h3 { font-size: 12px; font-weight: 700; color: #60a5fa; margin-bottom: 8px; }
+  .summary-card p { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+  .timeline { background: #1e293b; border-radius: 10px; padding: 16px; border: 1px solid #334155; }
+  .timeline h3 { font-size: 12px; font-weight: 700; color: #60a5fa; margin-bottom: 12px; }
+  .phase { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
+  .phase-num { background: #2563eb; color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .phase-info h4 { font-size: 12px; font-weight: 600; color: #e2e8f0; margin-bottom: 2px; }
+  .phase-info p { font-size: 11px; color: #94a3b8; }
+  .phase-info .weeks { font-size: 10px; color: #60a5fa; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>🏗️ HRISP → PHP/MySQL Replication Blueprint</h1>
+<p class="subtitle">Full codebase analysis · 38 controllers · 20 Jasper reports · Subscription model design</p>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('features')">📦 All Features</div>
+  <div class="tab" onclick="showTab('tech')">⚙️ Tech Mapping</div>
+  <div class="tab" onclick="showTab('subscriptions')">💳 Subscription Plans</div>
+  <div class="tab" onclick="showTab('architecture')">🗂️ PHP Architecture</div>
+  <div class="tab" onclick="showTab('feasibility')">✅ Feasibility</div>
+</div>
+
+<!-- FEATURES PANEL -->
+<div id="features" class="panel active">
+  <div class="module-grid">
+    <div class="module-card">
+      <h3><span class="icon">👤</span> Personal Data Sheet (PDS) <span class="badge core">CORE</span></h3>
+      <ul class="feature-list">
+        <li>Personal Info (50+ fields: name, birthdate, civil status, addresses, contact)</li>
+        <li>Government IDs: GSIS, Pag-IBIG, PhilHealth, SSS, TIN</li>
+        <li>Family Background (spouse, children, parents)</li>
+        <li>Educational Background (school, course, honors, year)</li>
+        <li>Civil Service Eligibility</li>
+        <li>Work Experience history</li>
+        <li>Voluntary Work</li>
+        <li>Learning & Development (trainings)</li>
+        <li>Other Info (skills, memberships, recognition)</li>
+        <li>Security Questions (clearance questions)</li>
+        <li>References</li>
+      </ul>
+    </div>
+    <div class="module-card">
+      <h3><span class="icon">📋</span> Service Record <span class="badge core">CORE</span></h3>
+      <ul class="feature-list">
+        <li>Full employment history per employee</li>
+        <li>Position, salary grade, step increment</li>
+        <li>Date From / Date To (with present toggle)</li>
+        <li>Mode of separation & separation date</li>
+        <li>Plantilla No., Office Assignment</li>
+        <li>Publication date range (accession)</li>
+        <li>CSC action date & release date</li>
+        <li>Eligibility, District, Remarks</li>
+        <li>Signing date, Entrance date</li>
+        <li>HR Admin view + Employee self-view</li>
+      </ul>
+    </div>
+    <div class="module-card">
+      <h3><span class="icon">🧾</span> Clearance <span class="badge core">CORE</span></h3>
+      <ul class="feature-list">
+        <li>Clearance request submission by employee</li>
+        <li>Purpose & effective date</li>
+        <li>Status tracking (SUBMITTED → APPROVED)</li>
+        <li>Approved by signatory</li>
+        <li>Clearance Approvers management</li>
+        <li>Service Record Signatory config</li>
+        <li>Print clearance form (CSC Form)</li>
+      </ul>
+    </div>
+    <div class="module-card">
+      <h3><span class="icon">📅</span> Appointments <span class="badge core">CORE</span></h3>
+      <ul class="feature-list">
+        <li>Employee appointment records</li>
+        <li>Position Title & Employee Status</li>
+        <li>Division assignment</li>
+        <li>View list of all appointments</li>
+      </ul>
+    </div>
+    <div class="module-card">
+      <h3><span class="icon">📁</span> 201 Documents <span class="badge core">CORE</span></h3>
+      <ul class="feature-list">
+        <li>File upload per employee</li>
+        <li>Document Type classification</li>
+        <li>Multiple file attachments per record</li>
+        <li>Transaction date & remarks</li>
+        <li>File download links stored in DB</li>
+      </ul>
+    </div>
+    <div class="module-card">
+      <h3><span class="icon">🖨️</span> Reports (JasperReports) <span class="badge report">REPORTS</span></h3>
+      <ul class="feature-list">
+        <li>PDS Full Print (CS Form 212) — 4 pages merged</li>
+        <li>Service Record (NewServiceRecord)</li>
+        <li>Employee Certification</li>
+        <li>Clearance Form (CSC Form)</li>
+        <li>CS Form No. 4</li>
+        <li>CS Form No. 33-B</li>
+        <li>RAI Report (2-page, with signatories)</li>
+        <li>Report on Accession</li>
+        <li>Report on Separation</li>
+        <li>Position Description Form (2 pages)</li>
+      </ul>
+    </div>
+    <div class="module-card">
+      <h3><span class="icon">⚙️</span> System Settings <span class="badge settings">SETTINGS</span></h3>
+      <ul class="feature-list">
+        <li>Divisions & Districts</li>
+        <li>Position Titles + Position Description Form</li>
+        <li>Salary Grades</li>
+        <li>Employee Status types</li>
+        <li>Eligibility types (CSC)</li>
+        <li>Schools & Degree Courses</li>
+        <li>Degree Levels & Academic Honors</li>
+        <li>Scholarships & Professions</li>
+        <li>Learning Types & Levels</li>
+        <li>Document Types</li>
+      </ul>
+    </div>
+    <div class="module-card">
+      <h3><span class="icon">🔐</span> Security & Users <span class="badge security">AUTH</span></h3>
+      <ul class="feature-list">
+        <li>Form-based login (username + password)</li>
+        <li>Role-based: HRADMIN vs EMPLOYEE</li>
+        <li>Employee IS the user (UserDetails)</li>
+        <li>Change Password module</li>
+        <li>Separate SysUser table</li>
+        <li>Hash-based employee URL security</li>
+        <li>REST API endpoints (/api/**)</li>
+        <li>Email sending (Spring Mail)</li>
+        <li>Data Migration service</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TECH MAPPING PANEL -->
+<div id="tech" class="panel">
+  <table class="tech-table">
+    <thead>
+      <tr>
+        <th>Feature / Layer</th>
+        <th>Java Spring Boot (Current)</th>
+        <th>PHP + Vanilla Stack (Target)</th>
+        <th>Effort</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Routing / Controllers</strong></td><td class="java-col">@Controller + @GetMapping/@PostMapping</td><td class="php-col">PHP Router (e.g. AltoRouter) or plain index.php dispatch</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>HTML Templates</strong></td><td class="java-col">Thymeleaf (.html with th: attributes)</td><td class="php-col">Plain PHP templates (.php files with echo / include)</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>Database ORM</strong></td><td class="java-col">Spring Data JPA + Hibernate (auto schema)</td><td class="php-col">PDO with manual SQL queries + migration scripts</td><td><span class="effort medium">MEDIUM</span></td></tr>
+      <tr><td><strong>Authentication</strong></td><td class="java-col">Spring Security (form login, UserDetails)</td><td class="php-col">PHP Sessions + password_verify() / password_hash()</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>Role-Based Access</strong></td><td class="java-col">antMatchers + UserType (HRADMIN/EMPLOYEE)</td><td class="php-col">Session-based role check in middleware/guard.php</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>Form Validation</strong></td><td class="java-col">@Valid + Errors + Bean Validation annotations</td><td class="php-col">PHP server-side validation + JS client-side</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>File Uploads (201 Docs)</strong></td><td class="java-col">MultipartFile + FileStorageService</td><td class="php-col">$_FILES + move_uploaded_file() + stored path in DB</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>PDF Reports (Jasper)</strong></td><td class="java-col">JasperReports (.jasper compiled templates)</td><td class="php-col">TCPDF or mPDF (PHP PDF libraries) — rebuild templates</td><td><span class="effort hard">HARD</span></td></tr>
+      <tr><td><strong>REST API</strong></td><td class="java-col">@RestController + Spring Data REST</td><td class="php-col">PHP returning JSON (header('Content-Type: application/json'))</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>Email Sending</strong></td><td class="java-col">Spring Boot Mail (JavaMailSender)</td><td class="php-col">PHPMailer or mail() with SMTP</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>Audit Fields</strong></td><td class="java-col">@CreatedDate, @LastModifiedDate (Auditable.java)</td><td class="php-col">created_at/updated_at columns + MySQL DEFAULT NOW()</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>Data Pagination</strong></td><td class="java-col">Spring Data Pageable</td><td class="php-col">LIMIT/OFFSET in SQL + manual page links</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>Frontend JS (Datalist, etc.)</strong></td><td class="java-col">Custom REST endpoint + JS fetch</td><td class="php-col">Same — PHP JSON endpoint + vanilla JS fetch</td><td><span class="effort easy">EASY</span></td></tr>
+      <tr><td><strong>Subscription Billing</strong></td><td class="java-col">❌ Not in current system</td><td class="php-col">NEW: subscriptions + plans tables + expiry check</td><td><span class="effort medium">MEDIUM</span></td></tr>
+      <tr><td><strong>Multi-Tenant (per org)</strong></td><td class="java-col">❌ Single tenant currently</td><td class="php-col">NEW: organization_id on all tables + tenant isolation</td><td><span class="effort hard">HARD</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SUBSCRIPTIONS PANEL -->
+<div id="subscriptions" class="panel">
+  <div class="billing-toggle">
+    <span>Billing cycle:</span>
+    <div class="toggle">
+      <span id="t-quarterly" class="active" onclick="setBilling('quarterly')">Quarterly</span>
+      <span id="t-yearly" onclick="setBilling('yearly')">Yearly</span>
+    </div>
+    <span id="save-label" style="color:#34d399;font-size:11px;font-weight:600;display:none">🎉 Save up to 25%</span>
+  </div>
+
+  <div class="plans-grid">
+    <div class="plan-card">
+      <div class="plan-name">🌱 Basic</div>
+      <div class="plan-tagline">Small offices · Up to 50 employees</div>
+      <div class="plan-price">
+        <div><span class="amount" id="p1">₱999</span> <span class="period" id="per1">/quarter</span></div>
+        <div class="alt" id="alt1">≈ ₱333/month</div>
+      </div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Up to 50 employees</li>
+        <li><span class="check">✓</span> Full PDS Management</li>
+        <li><span class="check">✓</span> PDS Print (CS Form 212)</li>
+        <li><span class="check">✓</span> Family & Educational BG</li>
+        <li><span class="check">✓</span> Basic employee list</li>
+        <li><span class="check">✓</span> Login / Change Password</li>
+        <li><span class="cross">✗</span> Service Records</li>
+        <li><span class="cross">✗</span> Clearance Module</li>
+        <li><span class="cross">✗</span> 201 Documents</li>
+        <li><span class="cross">✗</span> RAI / Accession Reports</li>
+      </ul>
+      <button class="plan-btn secondary">Get Started</button>
+    </div>
+
+    <div class="plan-card featured">
+      <div class="plan-name">⚡ Professional</div>
+      <div class="plan-tagline">Mid-size agencies · Up to 200 employees</div>
+      <div class="plan-price">
+        <div><span class="amount" id="p2">₱2,499</span> <span class="period" id="per2">/quarter</span></div>
+        <div class="alt" id="alt2">≈ ₱833/month</div>
+      </div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Up to 200 employees</li>
+        <li><span class="check">✓</span> Everything in Basic</li>
+        <li><span class="check">✓</span> Service Records</li>
+        <li><span class="check">✓</span> Clearance Management</li>
+        <li><span class="check">✓</span> 201 Documents & Files</li>
+        <li><span class="check">✓</span> Appointments module</li>
+        <li><span class="check">✓</span> All PDF Reports</li>
+        <li><span class="check">✓</span> CSC Reports (RAI, etc.)</li>
+        <li><span class="check">✓</span> Email Notifications</li>
+        <li><span class="cross">✗</span> Position Desc. Form</li>
+      </ul>
+      <button class="plan-btn primary">Most Popular</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">🏢 Enterprise</div>
+      <div class="plan-tagline">Large agencies · Unlimited employees</div>
+      <div class="plan-price">
+        <div><span class="amount" id="p3">₱4,999</span> <span class="period" id="per3">/quarter</span></div>
+        <div class="alt" id="alt3">≈ ₱1,666/month</div>
+      </div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Unlimited employees</li>
+        <li><span class="check">✓</span> Everything in Professional</li>
+        <li><span class="check">✓</span> Position Description Forms</li>
+        <li><span class="check">✓</span> Salary Grade Management</li>
+        <li><span class="check">✓</span> Data Migration tools</li>
+        <li><span class="check">✓</span> Custom Report exports</li>
+        <li><span class="check">✓</span> Multi-admin accounts</li>
+        <li><span class="check">✓</span> Priority support</li>
+        <li><span class="check">✓</span> API access</li>
+        <li><span class="check">✓</span> White-label option</li>
+      </ul>
+      <button class="plan-btn secondary">Contact Us</button>
+    </div>
+  </div>
+
+  <div class="sub-note">
+    <strong>📌 How subscriptions work in the PHP rebuild:</strong> Each organization registers as a tenant. A <code>subscriptions</code> table tracks <code>plan_type</code>, <code>start_date</code>, <code>end_date</code>, and <code>status</code>. A PHP middleware checks expiry on every request — if expired, only the dashboard and billing page are accessible. Features are gated by plan level stored in session. Payment can be manual (GCash/bank transfer + admin confirms) or later integrated with PayMongo/Stripe.
+  </div>
+</div>
+
+<!-- ARCHITECTURE PANEL -->
+<div id="architecture" class="panel">
+  <div class="arch-section">
+    <h3>📁 Recommended PHP Project Structure</h3>
+    <div class="folder-tree">
+<span class="dir">hrisp-php/</span>
+├── <span class="dir">app/</span>
+│   ├── <span class="dir">controllers/</span>           <span class="note">← maps to Spring @Controllers</span>
+│   │   ├── <span class="php">EmployeeController.php</span>
+│   │   ├── <span class="php">ServiceRecordController.php</span>
+│   │   ├── <span class="php">ClearanceController.php</span>
+│   │   ├── <span class="php">ReportsController.php</span>
+│   │   └── <span class="php">SubscriptionController.php</span>  <span class="note">← NEW</span>
+│   ├── <span class="dir">models/</span>                <span class="note">← maps to @Entity classes</span>
+│   │   ├── <span class="php">Employee.php</span>
+│   │   ├── <span class="php">ServiceRecord.php</span>
+│   │   └── <span class="php">Subscription.php</span>  <span class="note">← NEW</span>
+│   ├── <span class="dir">views/</span>                 <span class="note">← maps to Thymeleaf templates</span>
+│   │   ├── <span class="dir">employee/</span> <span class="dir">pds/</span> <span class="dir">reports/</span> <span class="dir">clearance/</span>
+│   │   └── <span class="dir">subscription/</span>  <span class="note">← NEW (plans, billing, expiry)</span>
+│   └── <span class="dir">middleware/</span>
+│       ├── <span class="php">AuthGuard.php</span>       <span class="note">← Spring Security equivalent</span>
+│       └── <span class="php">SubscriptionGuard.php</span>  <span class="note">← NEW feature gate</span>
+├── <span class="dir">database/</span>
+│   └── <span class="sql">migrations/</span>             <span class="note">← replaces JPA ddl-auto=update</span>
+├── <span class="dir">reports/</span>                   <span class="note">← TCPDF/mPDF templates</span>
+├── <span class="dir">uploads/</span>                   <span class="note">← 201 document files</span>
+├── <span class="dir">assets/</span>                    <span class="note">← CSS, JS (reuse from HRISP v1)</span>
+└── <span class="php">index.php</span>                  <span class="note">← front controller / router</span>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <h3>🗄️ New Database Tables (Subscription Layer)</h3>
+    <div class="db-grid">
+      <div class="db-table">
+        <h4>organizations</h4>
+        <div class="col pk">id (PK)</div>
+        <div class="col">name</div>
+        <div class="col">slug</div>
+        <div class="col">email</div>
+        <div class="col">created_at</div>
+      </div>
+      <div class="db-table">
+        <h4>subscriptions</h4>
+        <div class="col pk">id (PK)</div>
+        <div class="col fk">organization_id (FK)</div>
+        <div class="col new">plan_type (basic/pro/ent)</div>
+        <div class="col new">billing_cycle (quarterly/yearly)</div>
+        <div class="col new">start_date</div>
+        <div class="col new">end_date</div>
+        <div class="col new">status (active/expired/trial)</div>
+        <div class="col new">amount_paid</div>
+      </div>
+      <div class="db-table">
+        <h4>subscription_plans</h4>
+        <div class="col pk">id (PK)</div>
+        <div class="col new">plan_name</div>
+        <div class="col new">max_employees</div>
+        <div class="col new">quarterly_price</div>
+        <div class="col new">yearly_price</div>
+        <div class="col new">features (JSON)</div>
+      </div>
+      <div class="db-table">
+        <h4>payments</h4>
+        <div class="col pk">id (PK)</div>
+        <div class="col fk">subscription_id (FK)</div>
+        <div class="col new">reference_no</div>
+        <div class="col new">amount</div>
+        <div class="col new">payment_method</div>
+        <div class="col new">paid_at</div>
+        <div class="col new">confirmed_by</div>
+      </div>
+      <div class="db-table">
+        <h4>employee (add column)</h4>
+        <div class="col pk">id (PK)</div>
+        <div class="col new">organization_id (FK) ← NEW</div>
+        <div class="col">emp_no</div>
+        <div class="col">username</div>
+        <div class="col">... (all existing fields)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEASIBILITY PANEL -->
+<div id="feasibility" class="panel">
+  <div class="summary-grid">
+    <div class="summary-card">
+      <h3>✅ YES — 100% Replicable in PHP</h3>
+      <p>Everything in this Spring Boot project can be done in plain PHP + MySQL. The Spring framework provides convenience (ORM, security, templating) but nothing it does is impossible in PHP. The logic — CRUD operations, file uploads, session auth, PDF generation — is entirely achievable.</p>
+    </div>
+    <div class="summary-card">
+      <h3>⚠️ Hardest Part: PDF Reports</h3>
+      <p>The 10 JasperReport templates (.jasper files) are compiled binary Java templates. They cannot run in PHP. You must <strong>rebuild each report</strong> using TCPDF or mPDF. This is the biggest time investment. Reuse the existing layout/design but rewrite the rendering logic.</p>
+    </div>
+    <div class="summary-card">
+      <h3>💡 Big Win: Reuse HRIS v1 Frontend</h3>
+      <p>Since your HRIS v1 already uses HTML/CSS/JS, you can copy the UI components, sidebar, navbar, tables, and modals directly. The Thymeleaf templates are plain HTML with just <code>th:</code> attributes — strip those and replace with PHP <code>&lt;?php echo ?&gt;</code>.</p>
+    </div>
+    <div class="summary-card">
+      <h3>🆕 New: Multi-Tenant + Subscriptions</h3>
+      <p>The Java system is single-tenant (one organization). The PHP rebuild should add <code>organization_id</code> to every table to support multiple clients subscribing. Each org is isolated — HR admins only see their own employees. Plans gate features by checking the active subscription.</p>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <h3>📅 Suggested Build Phases</h3>
+    <div class="phase">
+      <div class="phase-num">1</div>
+      <div class="phase-info">
+        <h4>Foundation: Auth + Multi-Tenant + Subscriptions</h4>
+        <p>Login, sessions, org registration, subscription table, plan gating middleware</p>
+        <span class="weeks">~2–3 weeks</span>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">2</div>
+      <div class="phase-info">
+        <h4>Core PDS: Employee + Personal Data Sheet</h4>
+        <p>Employee CRUD, all 11 PDS sections, government IDs, addresses</p>
+        <span class="weeks">~3–4 weeks</span>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">3</div>
+      <div class="phase-info">
+        <h4>Service Record, Clearance, Appointments, 201 Docs</h4>
+        <p>All operational modules with HR Admin + Employee self-service views</p>
+        <span class="weeks">~3–4 weeks</span>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">4</div>
+      <div class="phase-info">
+        <h4>System Settings + Reports</h4>
+        <p>All 15 lookup modules + rebuild 10 PDF reports in TCPDF/mPDF</p>
+        <span class="weeks">~4–6 weeks</span>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">5</div>
+      <div class="phase-info">
+        <h4>Billing, Payments & Super Admin Dashboard</h4>
+        <p>Payment confirmation, plan upgrades, subscription expiry flow, super admin panel</p>
+        <span class="weeks">~2–3 weeks</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+let billing = 'quarterly';
+const prices = {
+  quarterly: { p1: '₱999', p2: '₱2,499', p3: '₱4,999', alt1: '≈ ₱333/month', alt2: '≈ ₱833/month', alt3: '≈ ₱1,666/month', per: '/quarter' },
+  yearly:    { p1: '₱2,999', p2: '₱7,499', p3: '₱14,999', alt1: 'Save ₱997 vs quarterly', alt2: 'Save ₱2,497 vs quarterly', alt3: 'Save ₱4,997 vs quarterly', per: '/year' }
+};
+function setBilling(mode) {
+  billing = mode;
+  const d = prices[mode];
+  ['1','2','3'].forEach(i => {
+    document.getElementById('p'+i).textContent = d['p'+i];
+    document.getElementById('per'+i).textContent = d.per;
+    document.getElementById('alt'+i).textContent = d['alt'+i];
+  });
+  document.getElementById('t-quarterly').className = mode === 'quarterly' ? 'active' : '';
+  document.getElementById('t-yearly').className = mode === 'yearly' ? 'active' : '';
+  document.getElementById('save-label').style.display = mode === 'yearly' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
